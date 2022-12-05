@@ -1,0 +1,92 @@
+[
+  {
+    "id": "PTD-01",
+    "name": "Samsung galaxy",
+    "category": "smart-phone",
+    "price": 340,
+    "isDiscount": true,
+    "discountPercentInDecimal": 0.3,
+    "productStatus": "discounting"
+  },
+  {
+    "id": "PTD-02",
+    "name": "iPod",
+    "category": "headphone",
+    "price": 99,
+    "isDiscount": true,
+    "discountPercentInDecimal": 0.12,
+    "productStatus": "discounting"
+  },
+  {
+    "id": "PTD-03",
+    "name": "Nvidia RTX Geforce 1080",
+    "category": "pc-component",
+    "price": 980,
+    "isDiscount": true,
+    "discountPercentInDecimal": 0.5,
+    "productStatus": "discounting"
+  },
+  {
+    "id": "PTD-04",
+    "name": "iPhone XS Max",
+    "category": "smart-phone",
+    "price": 510,
+    "isDiscount": true,
+    "discountPercentInDecimal": 0.1,
+    "productStatus": "discounting"
+  },
+  {
+    "id": "PTD-05",
+    "name": "MacBook M1 Pro",
+    "category": "laptop",
+    "price": 1099,
+    "isDiscount": true,
+    "discountPercentInDecimal": 0.05,
+    "productStatus": "discounting"
+  },
+  {
+    "id": "PTD-06",
+    "name": "Samsung note 20",
+    "category": "smart-phone",
+    "price": 320,
+    "isDiscount": false,
+    "discountPercentInDecimal": 0,
+    "productStatus": "new"
+  },
+  {
+    "id": "PTD-07",
+    "name": "Sony WX-1000XM4",
+    "category": "headphone",
+    "price": 273,
+    "isDiscount": false,
+    "discountPercentInDecimal": 0,
+    "productStatus": "new"
+  },
+  {
+    "id": "PTD-08",
+    "name": "Nvidia RTX Geforce 3080",
+    "category": "pc-component",
+    "price": 1108,
+    "isDiscount": false,
+    "discountPercentInDecimal": 0,
+    "productStatus": "new"
+  },
+  {
+    "id": "PTD-09",
+    "name": "iPhone 14 Pro Max",
+    "category": "smart-phone",
+    "price": 1098,
+    "isDiscount": false,
+    "discountPercentInDecimal": 0,
+    "productStatus": "new"
+  },
+  {
+    "id": "PTD-10",
+    "name": "MacBook M2 Pro",
+    "category": "laptop",
+    "price": 1499,
+    "isDiscount": false,
+    "discountPercentInDecimal": 0,
+    "productStatus": "new"
+  }
+]
