@@ -1,6 +1,6 @@
 [
-  {
-    "route": "/api/v1.0/products",
-    "description": "get all products from database."
-  }
+	{
+		"route": "/api/v1.0/products",
+		"description": "get all products from database."
+	}
 ]
