@@ -1,6 +1,6 @@
-# E-shopping API! [](https://img.shields.io/static/v1?label=Build&message=v1.0&color=green)
+# E-shopping API ![](https://img.shields.io/static/v1?label=Build&message=v1.0&color=green)
 
-I build API for E-shopping project!
+I build API for E-shopping project have authentication.
 
 ## Table of contents
 * [Technologies](#technologies)
