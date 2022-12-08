@@ -13,20 +13,20 @@ const corsOptions = {
 	origin: '*',
 	optionSuccessStatus: 200,
 };
-console.log("import.meta.url: ", import.meta.url);
-const __filename = fileURLToPath(import.meta.url);
-console.log("__filename: ", `../${__filename}`);
-const __dirname = dirname(__filename);
-console.log("__dirname: ", __dirname);
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = dirname(__filename);
 
 app.use(cors(corsOptions));
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(
-  bodyParser.urlencoded({
+	express.urlencoded({
     extended: true,
   })
 );
-app.use('/public', express.static(path.resolve('__dirname', '../static')));
+console.log("Static path: ", path.resolve('./static'));
+// app.use('/public', express.static(path.resolve('__dirname', '../static')));
+app.use('/public', express.static(path.resolve('./static')));
 app.use(routes);
 
 app.get('/', (req: Request, res: Response) => {

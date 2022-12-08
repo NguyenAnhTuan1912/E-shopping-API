@@ -1,11 +1,11 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
-import db from '../../utils/db.ultil.mjs';
+import LowDBUltils from '../../utils/lowdb.ultil.mjs';
 
 
 export const getAllProducts = () => {
-	return function (req: Request, res: Response) {
-		const data = db.get("products").value();
+	return async function (req: Request, res: Response) {
+		const data = await LowDBUltils.getRecords<ProductModel>("products");
 		res.type('json');
-		res.send(data);
+		return res.send(data);
 	};
 };
