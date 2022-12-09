@@ -1,11 +1,8 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
-import fs from 'fs';
-import path from 'path';
+import { Request, Response, NextFunction } from 'express';
 import jsonwebtoken, { decode } from 'jsonwebtoken';
-import jwt from 'express-jwt';
-import AuthUtils from '../utils/auth.ultil.mjs';
+// import {} from '../utils/auth.ultil.mjs';
 import authConfig from '../config/auth.config.mjs';
-import { Unauthorized, Forbidden } from '@curveball/http-errors';
+import { Unauthorized, Forbidden, BadRequest } from '@curveball/http-errors';
 
 export function checkAccessToken(req: Request, res: Response, next: NextFunction) {
     try {
@@ -13,30 +10,52 @@ export function checkAccessToken(req: Request, res: Response, next: NextFunction
             const [scheme, token] = req.headers.authorization!.split(" ");
             switch(scheme) {
                 case "Bearer": {
-                    const verified = jsonwebtoken.verify(token, authConfig.TOKEN_SECRET, (error) => {
+                    const verified = jsonwebtoken.verify(token, authConfig.tokenSecret, (error, decode) => {
                         if(error) {
-                            const err = new Forbidden("dasd")
-                            err.title = "JSONWebTokenVerifyErrors";
-                            err.detail = "Invalid token";
-                            throw err;
+                            throw new BadRequest("Invalid token")// .title = "JSONWebTokenVerifyErrors";;
                         }
+                        req.body.decodedData = decode;
                     });
                     return next();
                 }
                 default: {
-                    const err = new Forbidden()
-                    err.title = "UnsupportedAuthorizationScheme";
-                    err.detail = `${scheme} is not support in this site! :(()`;
-                    throw err;
+                    throw new Forbidden(`${scheme} is not support in this site! :(()`)// .title = "UnsupportedAuthorizationScheme";
                 }
             };
         } else {
-            const err = new Unauthorized("asjkdhkajshdkajshd")
-            err.title = "UnAuthorized";
-            err.detail = "You must log in first to access this resource!";
-            throw err;
+            throw new Unauthorized("You must log in first to access this resource!")// .title = "UnAuthorized";;
         }
     } catch (error: any) {
+        res.type('json');
+        res.status(error.httpStatus);
+        return res.send(error);
+    }
+}
+
+// Tam thoi se nam o day
+export function checkResquest(req: Request, res: Response, next: NextFunction) {
+    try {
+        const headers = req.headers;
+        const body = req.body;
+        console.log(req.method);
+        if(req.method !== "GET") {
+            switch(headers['content-type']) {
+                case "application/json": {
+                    break;
+                }
+                case "application/x-www-form-urlencoded": {
+                    break;
+                }
+                default: throw new BadRequest("Unsupported content type!");
+            }
+            if(typeof body !== 'string') {
+                throw new BadRequest("You must stringify your data object before request!");
+            }
+        }
+        return next();
+    } catch (error: any) {
+        res.type('json');
+        res.status(error.httpStatus);
         return res.send(error);
     }
 }

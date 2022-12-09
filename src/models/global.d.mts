@@ -21,6 +21,14 @@ declare global {
 		email: string;
 		altername: string;
 	}
+
+	type JWTPayloadModel = {
+		name: string;
+		sub: string;
+		exp: number;
+		fullExp: number; // Dev only
+		iat?: number;
+	}
 }
 
 export {}

@@ -6,6 +6,7 @@ import path, { dirname } from 'path';
 import fs from 'fs';
 import routes from './src/routes/routes.mjs';
 import apiConfig from './src/config/api.config.mjs';
+import { checkResquest } from './src/middlewares/auth.middleware.mjs';
 
 const app = express();
 const port = 3010;
@@ -18,6 +19,7 @@ const corsOptions = {
 // const __dirname = dirname(__filename);
 
 app.use(cors(corsOptions));
+app.use(checkResquest);
 app.use(express.json());
 app.use(
 	express.urlencoded({

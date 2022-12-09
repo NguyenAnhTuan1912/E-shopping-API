@@ -1,10 +1,9 @@
 import express from 'express';
-import fs from 'fs';
-import path from 'path';
+import { Request, Response, NextFunction } from 'express';
 import { getAllProducts } from '../controllers/v1.0/products.controller.mjs';
-import { login, register } from '../controllers/auth.controller.mjs';
+import { login, register, checkTokenEndPoint } from '../controllers/auth.controller.mjs';
 import apiConfig from '../config/api.config.mjs';
-import { checkAccessToken } from '../middlewares/auth.middleware.mjs'
+import { checkAccessToken, checkResquest } from '../middlewares/auth.middleware.mjs'
 
 const router = express.Router();
 const apiVersion = apiConfig.version; // Optional
@@ -14,6 +13,7 @@ const apiPathname = `/${apiBaseUrl}/v${apiVersion}`;
 
 router.post(`/${authBaseUrl}/login`, login());
 router.post(`/${authBaseUrl}/register`, register());
-router.get(apiPathname + `/products`, checkAccessToken, getAllProducts());
+router.post(`/${authBaseUrl}/accesstoken`, checkAccessToken, checkTokenEndPoint('html'));
+router.get(apiPathname + `/products`, getAllProducts());
 
 export default router;

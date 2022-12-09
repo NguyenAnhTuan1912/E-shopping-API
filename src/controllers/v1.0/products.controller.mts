@@ -1,11 +1,18 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
-import LowDBUltils from '../../utils/lowdb.ultil.mjs';
-
+import { Request, Response } from 'express';
+import { getRecords } from '../../utils/lowdb.ultil.mjs';
+import { NotFound } from '@curveball/http-errors';
 
 export const getAllProducts = () => {
 	return async function (req: Request, res: Response) {
-		const data = await LowDBUltils.getRecords<ProductModel>("products");
-		res.type('json');
-		return res.send(data);
+		try {
+			const data = await getRecords<ProductModel>("products");
+			if(data === undefined) throw new NotFound("Products not found");
+			res.type('json');
+			return res.send(data);
+		} catch (error: any) {
+			res.type('json');
+			res.status(error.httpStatus);
+			return res.send(error);
+		}
 	};
 };
