@@ -11,9 +11,9 @@ const apiBaseUrl = apiConfig.apiBaseUrl;
 const authBaseUrl = apiConfig.authBaseUrl;
 const apiPathname = `/${apiBaseUrl}/v${apiVersion}`;
 
-router.post(`/${authBaseUrl}/login`, login());
-router.post(`/${authBaseUrl}/register`, register());
+router.post(`/${authBaseUrl}/login`, checkResquest, login());
+router.post(`/${authBaseUrl}/register`, checkResquest, register());
 router.post(`/${authBaseUrl}/accesstoken`, checkAccessToken, checkTokenEndPoint('html'));
-router.get(apiPathname + `/products`, getAllProducts());
+router.get(apiPathname + `/products`, checkResquest, getAllProducts());
 
 export default router;

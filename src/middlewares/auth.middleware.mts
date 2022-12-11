@@ -36,8 +36,6 @@ export function checkAccessToken(req: Request, res: Response, next: NextFunction
 export function checkResquest(req: Request, res: Response, next: NextFunction) {
     try {
         const headers = req.headers;
-        const body = req.body;
-        console.log(req.method);
         if(req.method !== "GET") {
             switch(headers['content-type']) {
                 case "application/json": {
@@ -47,9 +45,6 @@ export function checkResquest(req: Request, res: Response, next: NextFunction) {
                     break;
                 }
                 default: throw new BadRequest("Unsupported content type!");
-            }
-            if(typeof body !== 'string') {
-                throw new BadRequest("You must stringify your data object before request!");
             }
         }
         return next();

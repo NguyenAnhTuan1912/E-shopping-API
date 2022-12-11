@@ -19,12 +19,11 @@ const corsOptions = {
 // const __dirname = dirname(__filename);
 
 app.use(cors(corsOptions));
-app.use(checkResquest);
-app.use(express.json());
+app.use(bodyParser.json());
 app.use(
-	express.urlencoded({
-    extended: true,
-  })
+	bodyParser.urlencoded({
+		extended: true,
+	})
 );
 console.log("Static path: ", path.resolve('./static'));
 // app.use('/public', express.static(path.resolve('__dirname', '../static')));

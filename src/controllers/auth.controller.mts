@@ -29,6 +29,8 @@ export const checkTokenEndPoint = (responseType: string) => {
 export const login = () => {
 	return async function (req: Request, res: Response) {
 		try {
+			console.log(req.body);
+			console.log(typeof req.body);
 			const username = req.body.username;
 			const password = req.body.password;
 			const user: UserModel | undefined = await getUser("username", username);
