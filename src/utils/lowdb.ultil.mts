@@ -1,4 +1,5 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
+import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcrypt';
 import lowdb from 'lowdb';
 import FileAsync from 'lowdb/adapters/FileAsync.js';
 import path from 'path';
@@ -7,7 +8,8 @@ console.log("Db path: ", path.resolve('./assets/db/db.json'));
 type MyDB = {
     products: ProductModel[],
     product_categories: string[],
-    users: UserModel[]
+    users: UserModel[],
+    tokens: TokenModel[]
 };
 
 const tablenames = ["products", "product_categories", "users"];
@@ -119,6 +121,24 @@ export async function getUser(key: keyof UserModel, value: any): Promise<UserMod
 export async function addUser(record: UserModel) {
     try {
         await db.get("users").push(record).write();
+        return Promise.resolve(true);
+    } catch (error) {
+        console.log(error);
+        return Promise.resolve(false);
+    }
+}
+
+/**
+* Update new user's information with id.
+* @param {string} id - Pass a user's id to find information.
+* @param {string} key - Pass a field name in a user table.
+* @param {string} value - Pass a new information.
+**/
+export async function updateUser(id: string, key: keyof UserModel, value: string): Promise<boolean> {
+    try {
+        const record = (await db).get("users").find({ id }).assign({[key]: value}).write();
+        if(!record) return Promise.resolve(false);
+        return Promise.resolve(true);
     } catch (error) {
         console.log(error);
         return Promise.resolve(false);
@@ -134,6 +154,52 @@ export async function isUserExist(key: keyof UserModel, value: any): Promise<boo
     try {
         const record = (await db).get("users").find({[key]: value}).value();
         if(!record) return Promise.resolve(false);
+        return Promise.resolve(true);
+    } catch (error) {
+        console.log(error);
+        return Promise.resolve(false);
+    }
+}
+
+/**
+* Create new custome token for other actions.
+* @param {string} userId - Pass a token.
+* @param {string} value - Pass a value for this field.
+**/
+export async function createCustomToken(userId: string, obj: any): Promise<TokenModel | undefined> {
+    try {
+        const token: TokenModel = {
+            id: uuidv4(),
+            userId: userId,
+            value: await bcrypt.hash(obj, await bcrypt.genSalt(10)),
+            expireAt: new Date().toLocaleString(),
+            type: "RESET_PASSWORD"
+        };
+        const record = (await db).get("tokens").push(token).write();
+        if(!record) return Promise.resolve(undefined);
+        return Promise.resolve(token);
+    } catch (error) {
+        console.log(error);
+        return Promise.resolve(undefined);
+    }
+}
+
+/**
+* Check a custom token is valid or not.
+* @param {string} userId - Pass a token.
+* @param {string} token - Pass a token from client.
+* @param {string} type - Type of token.
+* @return - true if token exist and isn't expired else false.
+**/
+export async function checkCustomToken(userId: string, token: string, type: string): Promise<boolean> {
+    try {
+        const record = (await db).get("tokens").find({ userId, type }).value();
+        if(!record) return Promise.resolve(false);
+        if(record.value !== token) return Promise.resolve(false);
+        const now = new Date().getTime();
+        const expiredDate = new Date(record.expireAt).getTime();
+        const isExpired = (now - expiredDate) > 0 ? true : false;
+        if(isExpired) return Promise.resolve(false);
         return Promise.resolve(true);
     } catch (error) {
         console.log(error);

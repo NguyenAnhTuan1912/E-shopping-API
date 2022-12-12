@@ -97,20 +97,6 @@
     "pc-component",
     "laptop"
   ],
-  "users": [
-    {
-      "id": "1670415054126",
-      "username": "tunanguyen",
-      "password": "$2b$10$uhDPLcR3q36kM40/YBSjOejj6SNqsz.1XiiTjusB58Ym5pL00s1lK",
-      "email": "tunanguyen@gmail.com",
-      "altername": "Nguyen Anh Tuan"
-    },
-    {
-      "id": "1670476606652",
-      "username": "tunanguyen19",
-      "password": "$2b$10$lk6NT9xNQ3wXYM9iRA1uM.fmhJLOfSYqVTl1yaB9D0rfXoq2oI3Q.",
-      "email": "tunanguyen19@gmail.com",
-      "altername": "Anh Tuan"
-    }
-  ]
+  "users": [],
+  "tokens": []
 }

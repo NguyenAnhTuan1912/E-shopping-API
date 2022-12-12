@@ -22,13 +22,38 @@ const expiresIn = authConfig.tokenTimeLife;
 // 	}
 // }
 
-export function generateAccessToken(user: UserModel) {
+export function generateIDToken(user: UserModel) {
 	try {
 		const fullExp = Date.now() + expiresIn * 1000;
 		const exp = Math.floor(fullExp / 1000);
-		const payload: JWTPayloadModel = {
+		const payload: JWTIDPayloadModel = {
 			name: user.username,
 			sub: user.id,
+			exp,
+			fullExp,
+		}
+		// let token;
+		// const check = jsonwebtoken.sign(payload, authConfig.tokenSecret, (error, $token) => {
+		// 	token = $token;
+		// 	if(error) {
+		// 		console.log(error);
+		// 		return undefined;
+		// 	}
+		// });
+		// console.log("KASJDGHKASHJD: ", token);
+		return jsonwebtoken.sign(payload, authConfig.tokenSecret); // token
+	} catch (error) {
+		return undefined;
+	}
+}
+
+export function generateAccessToken(scope: string) {
+	try {
+		const fullExp = Date.now() + expiresIn * 1000;
+		const exp = Math.floor(fullExp / 1000);
+		const payload: JWTAccessPayloadModel = {
+			sub: 'e-shopping-api',
+			scope,
 			exp,
 			fullExp,
 		}

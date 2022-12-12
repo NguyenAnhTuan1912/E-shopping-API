@@ -1,14 +1,15 @@
 import { Request, Response } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 // import jsonwebtoken from 'jsonwebtoken';
 // import jwt from 'express-jwt';
 import bcrypt from 'bcrypt';
-import { generateAccessToken, isEmailValid, isUsernameValid } from '../utils/auth.ultil.mjs';
-import { getUser, isUserExist, addUser } from '../utils/lowdb.ultil.mjs'
+import { generateAccessToken, generateIDToken, isEmailValid, isUsernameValid } from '../utils/auth.ultil.mjs';
+import { getUser, isUserExist, addUser, updateUser, createCustomToken, checkCustomToken } from '../utils/lowdb.ultil.mjs'
 import { BadRequest, InternalServerError } from '@curveball/http-errors';
 
 export const checkTokenEndPoint = (responseType: string) => {
     return function(req: Request, res: Response) {
-        const decodedData: JWTPayloadModel = req.body.decodedData;
+        const decodedData: JWTIDPayloadModel = req.body.decodedData;
 		if(responseType === 'json') {
 			res.type(responseType);
 			return res.send(decodedData);
@@ -26,62 +27,89 @@ export const checkTokenEndPoint = (responseType: string) => {
     }
 }
 
+type LoginReqBody = {
+	username: string;
+	password: string;
+};
+
 export const login = () => {
 	return async function (req: Request, res: Response) {
 		try {
-			console.log(req.body);
-			console.log(typeof req.body);
-			const username = req.body.username;
-			const password = req.body.password;
+			const body: LoginReqBody = req.body;
+			const username = body.username;
+			const password = body.password;
 			const user: UserModel | undefined = await getUser("username", username);
-			let token: string | undefined;
+			let id_token: string | undefined;
+			let access_token: string | undefined;
 			if(user === undefined) {
 				res.type("json");
-				throw new BadRequest("Your username isn't exist!")// .title = "UserForAuthenticationNotFound";
+				throw new BadRequest("Your account isn't exist. Please, register and log-in again!")// .title = "UserForAuthenticationNotFound";
 			}
 			if(!(await bcrypt.compare(password, user.password))) {
 				res.type("json");
 				throw new BadRequest("Your password is incorrect!")// .title = "UserForAuthenticationNotFound";
 			}
-			token = generateAccessToken(user);
-			if(!token) {
+			id_token = generateIDToken(user);
+			access_token = generateAccessToken('read write');
+			if(!id_token || !access_token) {
 				throw new InternalServerError("Cannot create token");
 			}
 			res.type("json");
 			return res.send({
-				status: "Login successfully!",
-				token
+				status: 1,
+				isSuccessful: true,
+				detail: "Login successfully!",
+				id_token,
+				access_token
 			});
 		} catch (error: any) {
+			const httpStatus = error.httpStatus || 500;
 			res.type("json");
-			res.status(error.httpStatus);
+			console.log("Login Http status error: ", httpStatus);
+			res.status(httpStatus);
 			return res.send(error);
 		}
 	};
 };
 
+
+type RegisterReqBody = {
+	username: string;
+	password: string;
+	confirmPassword: string;
+	email: string;
+	altername: string;
+};
+
 export const register = () => {
 	return async function (req: Request, res: Response) {
 		try {
-			const username: string = req.body.username;
-			const email: string = req.body.email;
-			const altername: string = req.body.altername;
-			if(await isUserExist("username", req.body.username)) {
-				throw new BadRequest("Your username already exist!")// .title = "UserForAuthenticationIsDuplicated";
-			}
-			if(await isUserExist("email", req.body.email)) {
-				throw new BadRequest("Your email already exist!")// .title = "UserForAuthenticationIdDuplicated";
-			}
+			const body: RegisterReqBody = req.body;
+			const username = body.username;
+			const password = body.password;
+			const confirmPassword = body.confirmPassword;
+			const email = body.email;
+			const altername = body.altername;
+			console.log(req.body);
 			if(!isUsernameValid(username)) {
-				throw new BadRequest("Your username is invalid");
+				throw new BadRequest("Your username is invalid.");
 			}
 			if(!isEmailValid(email)) {
-				throw new BadRequest("Your username is invalid");
+				throw new BadRequest("Your email is invalid.");
 			}
-			const newUser = {
-				id: Date.now().toString(),
+			if(await isUserExist("username", username)) {
+				throw new BadRequest("Your username already exist!")// .title = "UserForAuthenticationIsDuplicated";
+			}
+			if(await isUserExist("email", email)) {
+				throw new BadRequest("Your email already exist!")// .title = "UserForAuthenticationIdDuplicated";
+			}
+			if(password !== confirmPassword) {
+				throw new BadRequest("Failed to confirm password.");
+			}
+			const newUser: UserModel = {
+				id: uuidv4(),
 				username,
-				password: await bcrypt.hash(req.body.password, await bcrypt.genSalt(10)),
+				password: await bcrypt.hash(password, await bcrypt.genSalt(10)),
 				email,
 				altername
 			};
@@ -91,29 +119,86 @@ export const register = () => {
 			res.type("json");
 			return res.send(newUser);
 		} catch (error: any) {
+			const httpStatus = error.httpStatus || 500;
 			res.type("json");
-			res.status(error.httpStatus);
+			console.log("Register Http status error: ", httpStatus);
+			res.status(httpStatus);
 			return res.send(error);
 		}
 	};
 };
 
-export function forgotPassword(req: Request, res: Response) {
-	try {
-
-	} catch (error: any) {
-		res.type("json");
-		res.status(error.httpStatus);
-		return res.send(error);
+export const forgotPassword = () => {
+	return async function(req: Request, res: Response) {
+		try {
+			const email = req.body.email as string;
+			const origin = req.body.origin as string;
+			let user: UserModel | undefined;
+			let recover_token;
+			// let reset_password_token;
+			if(!isEmailValid(email)) {
+				throw new BadRequest("Your email is invalid.");
+			}
+			user = await getUser("email", email);
+			if(!user) {
+				throw new BadRequest("Your email doesn't exist!")// .title = "UserForAuthenticationIdDuplicated";
+			}
+			// reset_password_token = generateAccessToken("update");
+			// if(!reset_password_token) {
+			// 	throw new InternalServerError("Cannot create token");
+			// }
+			recover_token = createCustomToken(user.id, { email });
+			if(!recover_token) {
+				throw new InternalServerError("Cannot create token");
+			}
+			return res.send({
+				status: 1,
+				isSuccessful: true,
+				detail: "Email check successfully!",
+				recover_token
+			});
+		} catch (error: any) {
+			res.type("json");
+			res.status(error.httpStatus);
+			return res.send(error);
+		}
 	}
 }
 
-export function changePassword(req: Request, res: Response) {
-	try {
+type ChangePassword = {
+	password: string;
+	confirmPassword: string;
+}
 
-	} catch (error: any) {
-		res.type("json");
-		res.status(error.httpStatus);
-		return res.send(error);
+export const changePassword = () => {
+	return async function(req: Request, res: Response) {
+		try {
+			const body: ChangePassword = req.body;
+			const password = body.password;
+			const confirmPassword = body.confirmPassword;
+			const userId = req.query.userId;
+			const reset_token = req.query.token;
+			if(await checkCustomToken(userId, reset_token, 'RESET_PASSWORD')) {
+				throw new BadRequest("Your reset password token isn't exist or expired!");
+			}
+			if(password !== confirmPassword) {
+				throw new BadRequest("Failed to confirm password.");
+			}
+			const newPassword = await bcrypt.hash(password, await bcrypt.genSalt(10));
+			const update = updateUser(userId as string, "password", newPassword);
+			if(!update) {
+				throw new InternalServerError("Cannot change your password");
+			}
+			res.type("json");
+			return res.send({
+				status: 1,
+				isSuccessful: true,
+				detail: "Change password successfully!"
+			});
+		} catch (error: any) {
+			res.type("json");
+			res.status(error.httpStatus);
+			return res.send(error);
+		}
 	}
 }

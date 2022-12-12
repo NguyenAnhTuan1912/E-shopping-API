@@ -4,6 +4,14 @@ declare global {
 		description: string;
 	}
 
+	type TokenModel = {
+		id: string;
+		userId: string;
+		value: string;
+		type: string;
+		expireAt: string;
+	}
+
 	type ProductModel = {
 		id: string;
 		name: string;
@@ -22,12 +30,26 @@ declare global {
 		altername: string;
 	}
 
-	type JWTPayloadModel = {
+	type JWTIDPayloadModel = {
 		name: string;
 		sub: string;
 		exp: number;
 		fullExp: number; // Dev only
 		iat?: number;
+	}
+
+	type JWTAccessPayloadModel = {
+		sub: string;
+		exp: number;
+		scope: string;
+		fullExp: number; // Dev only
+		iat?: number;
+	}
+
+	type NotificationModel = {
+		title: string;
+		message: string;
+		from: string;
 	}
 }
 

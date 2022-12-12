@@ -10,8 +10,9 @@ export const getAllProducts = () => {
 			res.type('json');
 			return res.send(data);
 		} catch (error: any) {
+			const httpStatus = error.httpStatus | 500;
 			res.type('json');
-			res.status(error.httpStatus);
+			res.status(httpStatus);
 			return res.send(error);
 		}
 	};
