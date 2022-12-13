@@ -12,7 +12,9 @@ export function checkToken(opt?: accessTokenOptions) {
     return function(req: Request, res: Response, next: NextFunction) {
         try {
             if(req.headers.authorization) {
+                console.log(req.headers.authorization);
                 const [scheme, token] = req.headers.authorization!.split(" ");
+                console.log(scheme);
                 switch(scheme) {
                     case "Bearer": {
                         const verified = jsonwebtoken.verify(token, authConfig.tokenSecret, (error, decode) => {
@@ -26,9 +28,9 @@ export function checkToken(opt?: accessTokenOptions) {
                             if(allowScope && scope) {
                                 if(!scope.includes(allowScope)) throw new Forbidden(`You're not have permission to perform this action.`)// .title = "UnsupportedAuthorizationScheme";
                             }
-                            return next();
                         });
-                    }
+                        return next();
+                    };
                     default: {
                         throw new Forbidden(`${scheme} is not support in this site! :(()`)// .title = "UnsupportedAuthorizationScheme";
                     }
@@ -60,6 +62,7 @@ export function checkResquest(req: Request, res: Response, next: NextFunction) {
                 default: throw new BadRequest("Unsupported content type!");
             }
         }
+        console.log("HERE! auth middleware!");
         return next();
     } catch (error: any) {
         const httpStatus = error.httpStatus || 500;

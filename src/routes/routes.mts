@@ -15,8 +15,8 @@ const apiPathname = `/${apiBaseUrl}/v${apiVersion}`;
 router.post(`/${authBaseUrl}/login`, checkResquest, login());
 router.post(`/${authBaseUrl}/register`, checkResquest, register());
 router.put(`/${authBaseUrl}/forgot-password`, checkResquest, forgotPassword());
-router.put(`/${authBaseUrl}/register`, checkResquest, checkToken({ allowedScope: 'update' }), changePassword());
-router.post(`/${authBaseUrl}/accesstoken`, checkToken(), checkTokenEndPoint('html'));
+router.put(`/${authBaseUrl}/reset-password`, checkResquest, checkToken(), changePassword());
+router.post(`/${authBaseUrl}/accesstoken`, checkResquest, checkToken(), checkTokenEndPoint('html'));
 
 // Products
 router.get(apiPathname + `/products`, checkResquest, getAllProducts());

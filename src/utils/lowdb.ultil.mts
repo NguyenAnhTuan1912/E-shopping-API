@@ -12,6 +12,10 @@ type MyDB = {
     tokens: TokenModel[]
 };
 
+type TypesOfCustomToken = {
+    RESET_PASSWORD: string;
+}
+
 const tablenames = ["products", "product_categories", "users"];
 
 const dbPath = path.resolve('./assets/db/db.json');
@@ -90,7 +94,7 @@ const db = await lowdb(adapters);
 **/
 export async function getRecords<T>(tableName: keyof MyDB): Promise<T | undefined> {
     try {
-        const records = (await db).get(tableName).value() as T;
+        const records = db.get(tableName).value() as T;
         if(records === undefined) throw new Error("Cannot get records in " + tableName);
         return Promise.resolve(records);
     } catch (error) {
@@ -106,7 +110,7 @@ export async function getRecords<T>(tableName: keyof MyDB): Promise<T | undefine
 **/
 export async function getUser(key: keyof UserModel, value: any): Promise<UserModel | undefined> {
     try {
-        const user = (await db).get("users").find({ [key]: value }).value();
+        const user = db.get("users").find({ [key]: value }).value();
         return Promise.resolve(user);
     } catch (error) {
         console.log(error);
@@ -136,7 +140,8 @@ export async function addUser(record: UserModel) {
 **/
 export async function updateUser(id: string, key: keyof UserModel, value: string): Promise<boolean> {
     try {
-        const record = (await db).get("users").find({ id }).assign({[key]: value}).write();
+        const record = await db.get("users").find({ id }).assign({[key]: value}).write();
+        console.log(record);
         if(!record) return Promise.resolve(false);
         return Promise.resolve(true);
     } catch (error) {
@@ -152,7 +157,7 @@ export async function updateUser(id: string, key: keyof UserModel, value: string
 **/
 export async function isUserExist(key: keyof UserModel, value: any): Promise<boolean> {
     try {
-        const record = (await db).get("users").find({[key]: value}).value();
+        const record = db.get("users").find({[key]: value}).value();
         if(!record) return Promise.resolve(false);
         return Promise.resolve(true);
     } catch (error) {
@@ -170,12 +175,12 @@ export async function createCustomToken(userId: string, obj: any): Promise<Token
     try {
         const token: TokenModel = {
             id: uuidv4(),
-            userId: userId,
+            userId,
             value: await bcrypt.hash(obj, await bcrypt.genSalt(10)),
             expireAt: new Date().toLocaleString(),
             type: "RESET_PASSWORD"
         };
-        const record = (await db).get("tokens").push(token).write();
+        const record = await db.get("tokens").push(token).write();
         if(!record) return Promise.resolve(undefined);
         return Promise.resolve(token);
     } catch (error) {
@@ -191,18 +196,20 @@ export async function createCustomToken(userId: string, obj: any): Promise<Token
 * @param {string} type - Type of token.
 * @return - true if token exist and isn't expired else false.
 **/
-export async function checkCustomToken(userId: string, token: string, type: string): Promise<boolean> {
+export async function checkCustomToken(userId: string, type: keyof TypesOfCustomToken, token?: string): Promise<TokenModel | undefined> {
     try {
-        const record = (await db).get("tokens").find({ userId, type }).value();
-        if(!record) return Promise.resolve(false);
-        if(record.value !== token) return Promise.resolve(false);
-        const now = new Date().getTime();
-        const expiredDate = new Date(record.expireAt).getTime();
-        const isExpired = (now - expiredDate) > 0 ? true : false;
-        if(isExpired) return Promise.resolve(false);
-        return Promise.resolve(true);
+        const record = db.get("tokens").find({ userId, type }).value();
+        if(!record) return Promise.resolve(undefined);
+        if(token) {
+            if(record.value !== token) return Promise.resolve(undefined);
+            const now = new Date().getTime();
+            const expiredDate = new Date(record.expireAt).getTime();
+            const isExpired = (now - expiredDate) > 0 ? true : false;
+            if(isExpired) return Promise.resolve(undefined);
+        }
+        return Promise.resolve(record);
     } catch (error) {
         console.log(error);
-        return Promise.resolve(false);
+        return Promise.resolve(undefined);
     }
 }

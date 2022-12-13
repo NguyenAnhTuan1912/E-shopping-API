@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 // import jsonwebtoken from 'jsonwebtoken';
 // import jwt from 'express-jwt';
 import bcrypt from 'bcrypt';
-import { generateAccessToken, generateIDToken, isEmailValid, isUsernameValid } from '../utils/auth.ultil.mjs';
+import { generateAccessToken, generateIDToken, generateCustomToken, isEmailValid, isUsernameValid } from '../utils/auth.ultil.mjs';
 import { getUser, isUserExist, addUser, updateUser, createCustomToken, checkCustomToken } from '../utils/lowdb.ultil.mjs'
 import { BadRequest, InternalServerError } from '@curveball/http-errors';
 
@@ -121,7 +121,6 @@ export const register = () => {
 		} catch (error: any) {
 			const httpStatus = error.httpStatus || 500;
 			res.type("json");
-			console.log("Register Http status error: ", httpStatus);
 			res.status(httpStatus);
 			return res.send(error);
 		}
@@ -132,7 +131,8 @@ export const forgotPassword = () => {
 	return async function(req: Request, res: Response) {
 		try {
 			const email = req.body.email as string;
-			const origin = req.body.origin as string;
+			console.log(email);
+			// const origin = req.body.origin as string;
 			let user: UserModel | undefined;
 			let recover_token;
 			// let reset_password_token;
@@ -147,10 +147,11 @@ export const forgotPassword = () => {
 			// if(!reset_password_token) {
 			// 	throw new InternalServerError("Cannot create token");
 			// }
-			recover_token = createCustomToken(user.id, { email });
+			recover_token = generateCustomToken(user.id, { email });
 			if(!recover_token) {
 				throw new InternalServerError("Cannot create token");
 			}
+			console.log("RUN HERE?");
 			return res.send({
 				status: 1,
 				isSuccessful: true,
@@ -158,8 +159,9 @@ export const forgotPassword = () => {
 				recover_token
 			});
 		} catch (error: any) {
+			const httpStatus = error.httpStatus || 500;
 			res.type("json");
-			res.status(error.httpStatus);
+			res.status(httpStatus);
 			return res.send(error);
 		}
 	}
@@ -176,28 +178,30 @@ export const changePassword = () => {
 			const body: ChangePassword = req.body;
 			const password = body.password;
 			const confirmPassword = body.confirmPassword;
-			const userId = req.query.userId;
-			const reset_token = req.query.token;
-			if(await checkCustomToken(userId, reset_token, 'RESET_PASSWORD')) {
-				throw new BadRequest("Your reset password token isn't exist or expired!");
-			}
+			const userId = req.body.decodedData.sub;
 			if(password !== confirmPassword) {
 				throw new BadRequest("Failed to confirm password.");
 			}
 			const newPassword = await bcrypt.hash(password, await bcrypt.genSalt(10));
-			const update = updateUser(userId as string, "password", newPassword);
+			console.log(userId);
+            console.log(newPassword);
+			const update = await updateUser(userId, "password", newPassword);
+			console.log(update);
 			if(!update) {
 				throw new InternalServerError("Cannot change your password");
 			}
 			res.type("json");
+			console.log("IS PASSWORD CHANGE?");
 			return res.send({
 				status: 1,
 				isSuccessful: true,
 				detail: "Change password successfully!"
 			});
 		} catch (error: any) {
+			const httpStatus = error.httpStatus || 500;
+			console.log("HAS ERROR AFTER SEND RES?");
 			res.type("json");
-			res.status(error.httpStatus);
+			res.status(httpStatus);
 			return res.send(error);
 		}
 	}

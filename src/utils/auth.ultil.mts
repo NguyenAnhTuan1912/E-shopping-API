@@ -72,6 +72,31 @@ export function generateAccessToken(scope: string) {
 	}
 }
 
+export function generateCustomToken(userId: string, data: any) {
+	try {
+		const fullExp = Date.now() + expiresIn * 1000;
+		const exp = Math.floor(fullExp / 1000);
+		const payload: any = {
+			sub: userId,
+			exp,
+			fullExp,
+			...data
+		}
+		// let token;
+		// const check = jsonwebtoken.sign(payload, authConfig.tokenSecret, (error, $token) => {
+		// 	token = $token;
+		// 	if(error) {
+		// 		console.log(error);
+		// 		return undefined;
+		// 	}
+		// });
+		// console.log("KASJDGHKASHJD: ", token);
+		return jsonwebtoken.sign(payload, authConfig.tokenSecret); // token
+	} catch (error) {
+		return undefined;
+	}
+}
+
 export function isEmailValid(email: string) {
 	return email.match(authConfig.emailPattern);
 }
