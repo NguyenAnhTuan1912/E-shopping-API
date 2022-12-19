@@ -92,10 +92,33 @@ const db = await lowdb(adapters);
 * Get a list of records of a table by table name.
 * @param {string} tableName - Pass a table name in database.
 **/
-export async function getRecords<T>(tableName: keyof MyDB): Promise<T | undefined> {
+export async function getRecords<T>(tableName: keyof MyDB): Promise<T[] | undefined> {
     try {
-        const records = db.get(tableName).value() as T;
+        const records = db.get(tableName).value() as T[];
         if(records === undefined) throw new Error("Cannot get records in " + tableName);
+        return Promise.resolve(records);
+    } catch (error) {
+        console.log(error);
+        return Promise.resolve(undefined);
+    }
+}
+
+/**
+* Get a list of products by search strings. Can filter by name and category.
+* @param {string} tableName - Pass a table name in database.
+**/
+export async function getProducsBySearchString(searchStrings: any): Promise<ProductModel[] | undefined> {
+    try {
+        let records: ProductModel[] | undefined;
+        if(searchStrings.category) {
+            records = db.get("products").filter({ category: searchStrings.category }).value();
+        } else {
+            records = db.get("products").value();
+        }
+        records = records.filter(product => {
+            return product.name.toLowerCase().includes(searchStrings.name.toLowerCase());
+        });
+        if(records === undefined) throw new Error("Cannot get products.");
         return Promise.resolve(records);
     } catch (error) {
         console.log(error);

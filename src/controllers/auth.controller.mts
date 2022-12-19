@@ -43,11 +43,11 @@ export const login = () => {
 			let access_token: string | undefined;
 			if(user === undefined) {
 				res.type("json");
-				throw new BadRequest("Your account isn't exist. Please, register and log-in again!")// .title = "UserForAuthenticationNotFound";
+				throw new BadRequest("Your username is incorrect!. Please, try again.")// .title = "UserForAuthenticationNotFound";
 			}
 			if(!(await bcrypt.compare(password, user.password))) {
 				res.type("json");
-				throw new BadRequest("Your password is incorrect!")// .title = "UserForAuthenticationNotFound";
+				throw new BadRequest("Your password is incorrect!. Please, try again.")// .title = "UserForAuthenticationNotFound";
 			}
 			id_token = generateIDToken(user);
 			access_token = generateAccessToken('read write');
