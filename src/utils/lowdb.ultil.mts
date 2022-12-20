@@ -115,9 +115,11 @@ export async function getProducsBySearchString(searchStrings: any): Promise<Prod
         } else {
             records = db.get("products").value();
         }
-        records = records.filter(product => {
-            return product.name.toLowerCase().includes(searchStrings.name.toLowerCase());
-        });
+        if(searchStrings.name) {
+            records = records.filter(product => {
+                return product.name.toLowerCase().includes(searchStrings.name.toLowerCase());
+            });
+        }
         if(records === undefined) throw new Error("Cannot get products.");
         return Promise.resolve(records);
     } catch (error) {

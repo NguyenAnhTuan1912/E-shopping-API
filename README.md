@@ -27,5 +27,5 @@ $ npm start
 
 ## Features
 - Register.
-- Login.
+- Authentication.
 - Get all product.
